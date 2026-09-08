@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Petition data exporter</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0b0c0c;
+    --paper:#ffffff;
+    --panel:#f3f2f1;
+    --line:#b1b4b6;
+    --link:#1d70b8;
+    --action:#00703c;
+    --action-dark:#004e2a;
+    --focus:#ffdd00;
+    --error:#d4351c;
+    --error-panel:#fdf2f0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',-apple-system,'Segoe UI',Arial,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.5;
+  }
+  a{color:var(--link);}
+  header.top{
+    background:var(--ink);
+    color:var(--paper);
+    padding:18px 24px;
+    border-bottom:10px solid var(--action);
+  }
+  header.top .wrap{
+    max-width:760px;
+    margin:0 auto;
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  header.top .mark{
+    font-weight:700;
+    font-size:20px;
+    letter-spacing:-0.02em;
+  }
+  header.top .mark span{color:#8fd6ac;}
+  header.top .sub{
+    font-size:14px;
+    color:#c9c9c9;
+  }
+  main{
+    max-width:760px;
+    margin:0 auto;
+    padding:40px 24px 80px;
+  }
+  h1{
+    font-size:32px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    margin:0 0 8px;
+  }
+  p.lede{
+    font-size:17px;
+    color:#3d3d3d;
+    max-width:52ch;
+    margin:0 0 32px;
+  }
+  .field{
+    margin-bottom:24px;
+  }
+  label{
+    display:block;
+    font-weight:600;
+    font-size:16px;
+    margin-bottom:6px;
+  }
+  .hint{
+    font-size:14px;
+    color:#505a5f;
+    margin:0 0 8px;
+  }
+  input[type=text]{
+    width:100%;
+    max-width:420px;
+    font-size:17px;
+    padding:9px 10px;
+    border:2px solid var(--ink);
+    border-radius:0;
+    font-family:inherit;
+  }
+  input[type=text]:focus{
+    outline:3px solid var(--focus);
+    outline-offset:0;
+    box-shadow:inset 0 0 0 2px var(--ink);
+  }
+  .btn-row{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:4px;
+  }
+  button{
+    font-family:inherit;
+    font-size:17px;
+    font-weight:600;
+    padding:11px 20px;
+    border:2px solid transparent;
+    cursor:pointer;
+    border-radius:0;
+  }
+  button.primary{
+    background:var(--action);
+    color:#fff;
+  }
+  button.primary:hover{background:var(--action-dark);}
+  button.primary:disabled{
+    background:#7a7a7a;
+    cursor:not-allowed;
+  }
+  button.secondary{
+    background:transparent;
+    color:var(--ink);
+    border-color:var(--ink);
+  }
+  button.secondary:hover{background:var(--panel);}
+  button:focus{
+    outline:3px solid var(--focus);
+    outline-offset:0;
+  }
+  .status{
+    margin-top:16px;
+    font-size:15px;
+    color:#505a5f;
+  }
+  .error{
+    margin-top:20px;
+    background:var(--error-panel);
+    border-left:6px solid var(--error);
+    padding:14px 16px;
+    font-size:15px;
+  }
+  .error strong{display:block;margin-bottom:4px;}
+  .result{
+    margin-top:36px;
+    border-top:4px solid var(--ink);
+    padding-top:24px;
+    display:none;
+  }
+  .result.show{display:block;}
+  .result h2{
+    font-size:22px;
+    margin:0 0 4px;
+    font-weight:700;
+  }
+  .result .meta{
+    font-size:14px;
+    color:#505a5f;
+    margin:0 0 20px;
+  }
+  dl.summary{
+    display:grid;
+    grid-template-columns:140px 1fr;
+    row-gap:10px;
+    column-gap:16px;
+    margin:0 0 24px;
+    font-size:15px;
+  }
+  dl.summary dt{font-weight:600;color:#3d3d3d;}
+  dl.summary dd{margin:0;}
+  .state-pill{
+    display:inline-block;
+    background:var(--panel);
+    border:1px solid var(--line);
+    padding:2px 10px;
+    font-size:13px;
+    font-weight:600;
+    text-transform:capitalize;
+  }
+  .background-preview{
+    max-height:110px;
+    overflow:hidden;
+    position:relative;
+    color:#3d3d3d;
+    font-size:14px;
+  }
+  table.preview{
+    width:100%;
+    border-collapse:collapse;
+    font-size:14px;
+    margin-top:8px;
+  }
+  table.preview th, table.preview td{
+    text-align:left;
+    border-bottom:1px solid var(--line);
+    padding:7px 8px;
+  }
+  table.preview th{
+    background:var(--panel);
+    font-weight:600;
+  }
+  .table-wrap{
+    max-height:260px;
+    overflow-y:auto;
+    border:1px solid var(--line);
+  }
+  .table-note{
+    font-size:13px;
+    color:#505a5f;
+    margin-top:6px;
+  }
+  footer{
+    max-width:760px;
+    margin:0 auto;
+    padding:24px;
+    font-size:13px;
+    color:#505a5f;
+    border-top:1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <span class="mark">Petitions<span>.export</span></span>
+    <span class="sub">Excel exports for UK Parliament petitions</span>
+  </div>
+</header>
+
+<main>
+  <h1>Export a petition to Excel</h1>
+  <p class="lede">Enter a petition number to pull its current data from the UK Parliament petitions site and download it as a two-sheet .xls file — summary on one sheet, signatures by constituency on the other.</p>
+
+  <div class="field">
+    <label for="petition-id">Petition ID or URL</label>
+    <p class="hint">For example <code>700896</code> or a link to petition.parliament.uk/petitions/700896</p>
+    <input type="text" id="petition-id" placeholder="700896" inputmode="numeric" autocomplete="off">
+  </div>
+
+  <div class="btn-row">
+    <button class="primary" id="fetch-btn" type="button">Fetch petition</button>
+    <button class="secondary" id="download-btn" type="button" disabled>Download .xls</button>
+  </div>
+
+  <p class="status" id="status" aria-live="polite"></p>
+  <div class="error" id="error" style="display:none;"></div>
+
+  <div class="result" id="result">
+    <h2 id="result-title">—</h2>
+    <p class="meta">Petition <span id="result-id"></span> · <span class="state-pill" id="result-state"></span></p>
+
+    <dl class="summary">
+      <dt>Signatures</dt>
+      <dd id="result-signatures">—</dd>
+      <dt>Main text</dt>
+      <dd class="background-preview" id="result-background">—</dd>
+    </dl>
+
+    <div class="table-wrap">
+      <table class="preview">
+        <thead>
+          <tr><th>Constituency</th><th>MP</th><th>Signatures</th></tr>
+        </thead>
+        <tbody id="result-table-body"></tbody>
+      </table>
+    </div>
+    <p class="table-note" id="table-note"></p>
+  </div>
+</main>
+
+<footer>
+  Data is fetched live from petition.parliament.uk. This tool is not affiliated with the UK Parliament.
+</footer>
+
+<script>
+(function(){
+  const idInput = document.getElementById('petition-id');
+  const fetchBtn = document.getElementById('fetch-btn');
+  const downloadBtn = document.getElementById('download-btn');
+  const statusEl = document.getElementById('status');
+  const errorEl = document.getElementById('error');
+  const resultEl = document.getElementById('result');
+
+  let currentData = null;
+  let currentId = null;
+
+  function extractId(raw){
+    const trimmed = (raw || '').trim();
+    if (!trimmed) return null;
+    const numeric = trimmed.match(/^\d+$/);
+    if (numeric) return numeric[0];
+    const fromUrl = trimmed.match(/petitions\/(\d+)/);
+    if (fromUrl) return fromUrl[1];
+    return null;
+  }
+
+  function htmlToPlainText(html){
+    const container = document.createElement('div');
+    container.innerHTML = html || '';
+    container.querySelectorAll('p, br, li').forEach(el => el.insertAdjacentText('afterend', '\n'));
+    const text = container.textContent || '';
+    return text.replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  function setStatus(msg){
+    statusEl.textContent = msg || '';
+  }
+
+  function showError(title, detail){
+    errorEl.style.display = 'block';
+    errorEl.innerHTML = '<strong>' + title + '</strong>' + (detail ? detail : '');
+  }
+
+  function clearError(){
+    errorEl.style.display = 'none';
+    errorEl.innerHTML = '';
+  }
+
+  function renderResult(id, attrs){
+    document.getElementById('result-title').textContent = attrs.action || '(untitled petition)';
+    document.getElementById('result-id').textContent = '#' + id;
+    document.getElementById('result-state').textContent = attrs.state || 'unknown';
+    document.getElementById('result-signatures').textContent =
+      (attrs.signature_count != null ? attrs.signature_count.toLocaleString('en-GB') : '—');
+    document.getElementById('result-background').textContent = htmlToPlainText(attrs.background).slice(0, 400) || '—';
+
+    const rows = attrs.signatures_by_constituency || [];
+    const tbody = document.getElementById('result-table-body');
+    tbody.innerHTML = '';
+    const previewRows = rows.slice(0, 50);
+    previewRows.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + (row.name || '') + '</td>' +
+        '<td>' + (row.mp || '') + '</td>' +
+        '<td>' + (row.signature_count != null ? row.signature_count.toLocaleString('en-GB') : '') + '</td>';
+      tbody.appendChild(tr);
+    });
+    document.getElementById('table-note').textContent =
+      rows.length > 50
+        ? ('Showing first 50 of ' + rows.length.toLocaleString('en-GB') + ' constituencies. The full list is included in the download.')
+        : (rows.length + ' constituencies found. All are included in the download.');
+
+    resultEl.classList.add('show');
+  }
+
+  async function fetchPetition(){
+    clearError();
+    resultEl.classList.remove('show');
+    downloadBtn.disabled = true;
+    currentData = null;
+    currentId = null;
+
+    const id = extractId(idInput.value);
+    if (!id){
+      showError('Enter a valid petition ID.', 'This should be a number, like 700896, or a full petition URL.');
+      return;
+    }
+
+    const url = 'https://petition.parliament.uk/petitions/' + id + '.json';
+    fetchBtn.disabled = true;
+    setStatus('Fetching petition ' + id + ' …');
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok){
+        if (res.status === 404){
+          showError('Petition not found.', 'No petition exists with ID ' + id + '.');
+        } else {
+          showError('The petitions site returned an error (status ' + res.status + ').', 'Try again in a moment.');
+        }
+        setStatus('');
+        return;
+      }
+      const json = await res.json();
+      const attrs = json && json.data && json.data.attributes;
+      if (!attrs){
+        showError('Unexpected response shape.', 'The petitions API did not return the data this tool expects.');
+        setStatus('');
+        return;
+      }
+
+      currentData = attrs;
+      currentId = id;
+      renderResult(id, attrs);
+      downloadBtn.disabled = false;
+      setStatus('Loaded petition ' + id + '.');
+    } catch (err){
+      showError(
+        'Could not reach the petitions site.',
+        'This is usually a network issue or the browser blocking the cross-site request. Details: ' + (err && err.message ? err.message : String(err))
+      );
+      setStatus('');
+    } finally {
+      fetchBtn.disabled = false;
+    }
+  }
+
+  function downloadXls(){
+    if (!currentData || !currentId) return;
+
+    const attrs = currentData;
+    const id = currentId;
+
+    const sheet1Data = [
+      ['Title', attrs.action || ''],
+      ['Main text', htmlToPlainText(attrs.background)],
+      ['Status', attrs.state || ''],
+      ['Signatures', attrs.signature_count != null ? attrs.signature_count : '']
+    ];
+
+    const sheet2Data = [['Constituency', 'MP', 'Signatures']];
+    (attrs.signatures_by_constituency || []).forEach(row => {
+      sheet2Data.push([row.name || '', row.mp || '', row.signature_count != null ? row.signature_count : '']);
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws1 = XLSX.utils.aoa_to_sheet(sheet1Data);
+    ws1['!cols'] = [{ wch: 16 }, { wch: 90 }];
+    const ws2 = XLSX.utils.aoa_to_sheet(sheet2Data);
+    ws2['!cols'] = [{ wch: 30 }, { wch: 30 }, { wch: 14 }];
+
+    // Sheet names capped at 31 chars, the Excel/BIFF limit
+    const sheet1Name = ('Petition data - ' + id).slice(0, 31);
+    const sheet2Name = ('Signature data - ' + id).slice(0, 31);
+
+    XLSX.utils.book_append_sheet(wb, ws1, sheet1Name);
+    XLSX.utils.book_append_sheet(wb, ws2, sheet2Name);
+
+    XLSX.writeFile(wb, 'petition-' + id + '.xls', { bookType: 'biff8' });
+  }
+
+  fetchBtn.addEventListener('click', fetchPetition);
+  downloadBtn.addEventListener('click', downloadXls);
+  idInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter'){
+      e.preventDefault();
+      fetchPetition();
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
