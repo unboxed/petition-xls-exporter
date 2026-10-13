@@ -288,7 +288,11 @@
   let currentData = null;
   let currentId = null;
 
-  const EXPORT_FONT = { name: 'Aptos Narrow', size: 11 };
+  const EXPORT_FONT = { name: 'Aptos Narrow', size: 11, color: { argb: 'FF000000' } };
+  // Label/header cells: white text on Excel's "Dark Green, Accent 3" (Office 2023 theme).
+  // Set as an explicit RGB because ExcelJS embeds an older theme whose accent 3 is olive.
+  const LABEL_FONT = Object.assign({}, EXPORT_FONT, { color: { argb: 'FFFFFFFF' } });
+  const LABEL_FILL = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF196B24' } };
 
   function extractId(raw){
     const trimmed = (raw || '').trim();
@@ -434,8 +438,10 @@
     const sheet2Name = ('Signature data - ' + id).slice(0, 31);
 
     const wb = new ExcelJS.Workbook();
-    addSheet(wb, sheet1Name, sheet1Data, [16, 90]);
-    addSheet(wb, sheet2Name, sheet2Data, [30, 30, 14]);
+    const ws1 = addSheet(wb, sheet1Name, sheet1Data, [16, 90]);
+    styleAsLabels(ws1.getColumn(1));
+    const ws2 = addSheet(wb, sheet2Name, sheet2Data, [30, 30, 14]);
+    styleAsLabels(ws2.getRow(1));
 
     downloadBtn.disabled = true;
     try {
@@ -461,6 +467,15 @@
     ws.columns = widths.map(width => ({ width: width, style: { font: EXPORT_FONT } }));
     ws.addRows(rows);
     ws.eachRow(row => row.eachCell(cell => { cell.font = EXPORT_FONT; }));
+    return ws;
+  }
+
+  // Styles only the populated cells of a row or column
+  function styleAsLabels(rowOrColumn){
+    rowOrColumn.eachCell(cell => {
+      cell.font = LABEL_FONT;
+      cell.fill = LABEL_FILL;
+    });
   }
 
   fetchBtn.addEventListener('click', fetchPetition);
