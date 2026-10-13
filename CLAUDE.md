@@ -20,7 +20,7 @@ The inline script is a single IIFE with module-level state `currentData` (the AP
 - `fetchPetition` resets state, calls the API client-side, handles 404 / non-OK / malformed-shape / network (often CORS) errors with on-screen messages via `showError`, then stores the attributes and calls `renderResult`.
 - `renderResult` shows a preview, capped at the first 50 constituencies (the download always includes all of them).
 - `downloadXlsx` builds both sheets from `currentData` via `addSheet`, writes with `wb.xlsx.writeBuffer()`, and triggers the download through a Blob URL.
-- `addSheet` applies `EXPORT_FONT` (Aptos Narrow 11pt, black) and a per-sheet horizontal alignment (sheet 1 left, sheet 2 center) to each column's default style and to every written cell. The workbook's built-in default font remains Calibri, so cells outside the exported columns use it.
+- `addSheet` applies `EXPORT_FONT` (Aptos Narrow 11pt, black) and a per-sheet alignment (sheet 1 left/top with wrapped text so rows grow to fit, sheet 2 centred) to each column's default style and to every written cell. The workbook's built-in default font remains Calibri, so cells outside the exported columns use it.
 - `styleAsLabels` gives sheet 1 column A and the sheet 2 header row white text on `#196B24` (Excel's "Dark Green, Accent 3" in the Office 2023 theme). It's an explicit RGB, not a theme colour, because ExcelJS embeds an older Office theme where accent 3 is olive `#9BBB59`.
 - `htmlToPlainText` converts the petition's HTML `background` field to plain text; it's used by both the preview and the export.
 
