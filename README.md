@@ -1,6 +1,6 @@
 # Petition Data Exporter
 
-A single-file web app that fetches a UK Parliament petition's data and exports it as a two-sheet Excel `.xls` file.
+A single-file web app that fetches a UK Parliament petition's data and exports it as a two-sheet Excel `.xlsx` file.
 
 ## What it does
 
@@ -8,9 +8,9 @@ A single-file web app that fetches a UK Parliament petition's data and exports i
 2. The app fetches the petition's data from the official UK Parliament petitions API:
    `https://petition.parliament.uk/petitions/{id}.json`
 3. It shows a preview of the petition — title, status, signature count, a snippet of the main text, and a table of signatures by constituency.
-4. Clicking **Download .xls** generates and downloads a legacy Excel `.xls` file (not `.xlsx`) containing two sheets built from that data.
+4. Clicking **Download .xlsx** generates and downloads an Excel `.xlsx` file containing two sheets built from that data. All cells use Aptos Narrow, 11pt.
 
-## File structure of the generated .xls
+## File structure of the generated .xlsx
 
 **Sheet 1 — `Petition data - {id}`**
 
@@ -35,14 +35,14 @@ A table with one row per constituency, built from the `signatures_by_constituenc
 
 - A single self-contained `index.html` file — no build step, no server, no installation.
 - Petition data is fetched client-side, directly from the Parliament petitions API.
-- The `.xls` file is generated in the browser using [SheetJS](https://sheetjs.com/) (`xlsx` library), loaded from a CDN, writing in the `biff8` format to produce a genuine legacy `.xls` binary rather than a renamed `.xlsx`.
+- The `.xlsx` file is generated in the browser using [ExcelJS](https://github.com/exceljs/exceljs), loaded from a CDN.
 - Styling is plain CSS with no framework dependency.
 
 ## Usage
 
 1. Open `index.html` in any modern web browser (double-click it, or host it anywhere).
 2. Enter a petition ID or URL and click **Fetch petition**.
-3. Review the preview, then click **Download .xls** to save the file.
+3. Review the preview, then click **Download .xlsx** to save the file.
 
 ## Limitations
 

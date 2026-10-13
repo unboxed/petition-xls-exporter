@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Petition data exporter</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -233,7 +233,7 @@
 
 <main>
   <h1>Export a petition to Excel</h1>
-  <p class="lede">Enter a petition number to pull its current data from the UK Parliament petitions site and download it as a two-sheet .xls file — summary on one sheet, signatures by constituency on the other.</p>
+  <p class="lede">Enter a petition number to pull its current data from the UK Parliament petitions site and download it as a two-sheet .xlsx file — summary on one sheet, signatures by constituency on the other.</p>
 
   <div class="field">
     <label for="petition-id">Petition ID or URL</label>
@@ -243,7 +243,7 @@
 
   <div class="btn-row">
     <button class="primary" id="fetch-btn" type="button">Fetch petition</button>
-    <button class="secondary" id="download-btn" type="button" disabled>Download .xls</button>
+    <button class="secondary" id="download-btn" type="button" disabled>Download .xlsx</button>
   </div>
 
   <p class="status" id="status" aria-live="polite"></p>
@@ -287,6 +287,8 @@
 
   let currentData = null;
   let currentId = null;
+
+  const EXPORT_FONT = { name: 'Aptos Narrow', size: 11 };
 
   function extractId(raw){
     const trimmed = (raw || '').trim();
@@ -409,7 +411,7 @@
     }
   }
 
-  function downloadXls(){
+  async function downloadXlsx(){
     if (!currentData || !currentId) return;
 
     const attrs = currentData;
@@ -427,24 +429,42 @@
       sheet2Data.push([row.name || '', row.mp || '', row.signature_count != null ? row.signature_count : '']);
     });
 
-    const wb = XLSX.utils.book_new();
-    const ws1 = XLSX.utils.aoa_to_sheet(sheet1Data);
-    ws1['!cols'] = [{ wch: 16 }, { wch: 90 }];
-    const ws2 = XLSX.utils.aoa_to_sheet(sheet2Data);
-    ws2['!cols'] = [{ wch: 30 }, { wch: 30 }, { wch: 14 }];
-
-    // Sheet names capped at 31 chars, the Excel/BIFF limit
+    // Sheet names capped at 31 chars, the Excel limit
     const sheet1Name = ('Petition data - ' + id).slice(0, 31);
     const sheet2Name = ('Signature data - ' + id).slice(0, 31);
 
-    XLSX.utils.book_append_sheet(wb, ws1, sheet1Name);
-    XLSX.utils.book_append_sheet(wb, ws2, sheet2Name);
+    const wb = new ExcelJS.Workbook();
+    addSheet(wb, sheet1Name, sheet1Data, [16, 90]);
+    addSheet(wb, sheet2Name, sheet2Data, [30, 30, 14]);
 
-    XLSX.writeFile(wb, 'petition-' + id + '.xls', { bookType: 'biff8' });
+    downloadBtn.disabled = true;
+    try {
+      const buffer = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'petition-' + id + '.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(link.href), 0);
+    } catch (err){
+      showError('Could not create the Excel file.', 'Details: ' + (err && err.message ? err.message : String(err)));
+    } finally {
+      downloadBtn.disabled = false;
+    }
+  }
+
+  // Font is set on each column (so new cells typed in Excel match) and on each written cell
+  function addSheet(wb, name, rows, widths){
+    const ws = wb.addWorksheet(name);
+    ws.columns = widths.map(width => ({ width: width, style: { font: EXPORT_FONT } }));
+    ws.addRows(rows);
+    ws.eachRow(row => row.eachCell(cell => { cell.font = EXPORT_FONT; }));
   }
 
   fetchBtn.addEventListener('click', fetchPetition);
-  downloadBtn.addEventListener('click', downloadXls);
+  downloadBtn.addEventListener('click', downloadXlsx);
   idInput.addEventListener('keydown', e => {
     if (e.key === 'Enter'){
       e.preventDefault();
