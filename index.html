@@ -293,6 +293,8 @@
   // Set as an explicit RGB because ExcelJS embeds an older theme whose accent 3 is olive.
   const LABEL_FONT = Object.assign({}, EXPORT_FONT, { color: { argb: 'FFFFFFFF' } });
   const LABEL_FILL = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF196B24' } };
+  const THIN_BLACK = { style: 'thin', color: { argb: 'FF000000' } };
+  const CELL_BORDER = { top: THIN_BLACK, left: THIN_BLACK, bottom: THIN_BLACK, right: THIN_BLACK };
 
   function extractId(raw){
     const trimmed = (raw || '').trim();
@@ -463,14 +465,16 @@
     }
   }
 
-  // Font and alignment are set on each column (so new cells typed in Excel match) and on each written cell
+  // Font and alignment are set on each column (so new cells typed in Excel match) and on each written cell.
+  // Gridlines are hidden, and written cells get a thin black border instead.
   function addSheet(wb, name, rows, widths, alignment){
-    const ws = wb.addWorksheet(name);
+    const ws = wb.addWorksheet(name, { views: [{ showGridLines: false }] });
     ws.columns = widths.map(width => ({ width: width, style: { font: EXPORT_FONT, alignment: alignment } }));
     ws.addRows(rows);
     ws.eachRow(row => row.eachCell(cell => {
       cell.font = EXPORT_FONT;
       cell.alignment = alignment;
+      cell.border = CELL_BORDER;
     }));
     return ws;
   }
