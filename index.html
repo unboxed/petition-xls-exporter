@@ -436,8 +436,8 @@
     });
 
     // Sheet names capped at 31 chars, the Excel limit
-    const sheet1Name = ('Petition data - ' + id).slice(0, 31);
-    const sheet2Name = ('Signature data - ' + id).slice(0, 31);
+    const sheet1Name = ('Petition text ' + id).slice(0, 31);
+    const sheet2Name = ('Signature data ' + id).slice(0, 31);
 
     const wb = new ExcelJS.Workbook();
     const ws1 = addSheet(wb, sheet1Name, sheet1Data, [25, 35], { horizontal: 'left', vertical: 'top', wrapText: true });

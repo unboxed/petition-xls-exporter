@@ -12,7 +12,7 @@ A single-file web app that fetches a UK Parliament petition's data and exports i
 
 ## File structure of the generated .xlsx
 
-**Sheet 1 — `Petition data - {id}`**
+**Sheet 1 — `Petition text {id}`**
 
 A two-column, four-row summary (no header row):
 
@@ -23,7 +23,7 @@ A two-column, four-row summary (no header row):
 | Status | the petition's `state` (e.g. `open`, `closed`) |
 | Signatures | the petition's `signature_count` |
 
-**Sheet 2 — `Signature data - {id}`**
+**Sheet 2 — `Signature data {id}`**
 
 A table with one row per constituency, built from the `signatures_by_constituency` field:
 

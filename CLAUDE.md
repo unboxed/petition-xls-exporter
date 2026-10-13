@@ -27,8 +27,8 @@ The inline script is a single IIFE with module-level state `currentData` (the AP
 
 ## Export format (contract described in README)
 
-- Sheet 1 `Petition data - {id}`: four label/value rows, no header — Title (`action`), Main text (`background`, HTML stripped), Status (`state`), Signatures (`signature_count`).
-- Sheet 2 `Signature data - {id}`: header row `Constituency | MP | Signatures`, then one row per entry in `signatures_by_constituency` (`name`, `mp`, `signature_count`).
+- Sheet 1 `Petition text {id}`: four label/value rows, no header — Title (`action`), Main text (`background`, HTML stripped), Status (`state`), Signatures (`signature_count`).
+- Sheet 2 `Signature data {id}`: header row `Constituency | MP | Signatures`, then one row per entry in `signatures_by_constituency` (`name`, `mp`, `signature_count`).
 - Sheet names are truncated to 31 characters (Excel limit). Output filename is `petition-{id}.xlsx`.
 
 If you change the export shape, update the README's "File structure of the generated .xlsx" section to match.
