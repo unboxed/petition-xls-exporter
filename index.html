@@ -438,9 +438,9 @@
     const sheet2Name = ('Signature data - ' + id).slice(0, 31);
 
     const wb = new ExcelJS.Workbook();
-    const ws1 = addSheet(wb, sheet1Name, sheet1Data, [16, 90]);
+    const ws1 = addSheet(wb, sheet1Name, sheet1Data, [16, 90], 'left');
     styleAsLabels(ws1.getColumn(1));
-    const ws2 = addSheet(wb, sheet2Name, sheet2Data, [30, 30, 14]);
+    const ws2 = addSheet(wb, sheet2Name, sheet2Data, [30, 30, 14], 'center');
     styleAsLabels(ws2.getRow(1));
 
     downloadBtn.disabled = true;
@@ -461,12 +461,16 @@
     }
   }
 
-  // Font is set on each column (so new cells typed in Excel match) and on each written cell
-  function addSheet(wb, name, rows, widths){
+  // Font and horizontal alignment are set on each column (so new cells typed in Excel match) and on each written cell
+  function addSheet(wb, name, rows, widths, horizontal){
+    const alignment = { horizontal: horizontal };
     const ws = wb.addWorksheet(name);
-    ws.columns = widths.map(width => ({ width: width, style: { font: EXPORT_FONT } }));
+    ws.columns = widths.map(width => ({ width: width, style: { font: EXPORT_FONT, alignment: alignment } }));
     ws.addRows(rows);
-    ws.eachRow(row => row.eachCell(cell => { cell.font = EXPORT_FONT; }));
+    ws.eachRow(row => row.eachCell(cell => {
+      cell.font = EXPORT_FONT;
+      cell.alignment = alignment;
+    }));
     return ws;
   }
 
