@@ -299,8 +299,8 @@
   }
 
   function htmlToPlainText(html){
-    const container = document.createElement('div');
-    container.innerHTML = html || '';
+    // DOMParser gives an inert document, so untrusted HTML can't load resources or run handlers
+    const container = new DOMParser().parseFromString(html || '', 'text/html').body;
     container.querySelectorAll('p, br, li').forEach(el => el.insertAdjacentText('afterend', '\n'));
     const text = container.textContent || '';
     return text.replace(/\n{3,}/g, '\n\n').trim();
@@ -312,7 +312,11 @@
 
   function showError(title, detail){
     errorEl.style.display = 'block';
-    errorEl.innerHTML = '<strong>' + title + '</strong>' + (detail ? detail : '');
+    errorEl.innerHTML = '';
+    const strong = document.createElement('strong');
+    strong.textContent = title;
+    errorEl.appendChild(strong);
+    if (detail) errorEl.appendChild(document.createTextNode(detail));
   }
 
   function clearError(){
@@ -334,10 +338,15 @@
     const previewRows = rows.slice(0, 50);
     previewRows.forEach(row => {
       const tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td>' + (row.name || '') + '</td>' +
-        '<td>' + (row.mp || '') + '</td>' +
-        '<td>' + (row.signature_count != null ? row.signature_count.toLocaleString('en-GB') : '') + '</td>';
+      [
+        row.name || '',
+        row.mp || '',
+        row.signature_count != null ? row.signature_count.toLocaleString('en-GB') : ''
+      ].forEach(value => {
+        const td = document.createElement('td');
+        td.textContent = value;
+        tr.appendChild(td);
+      });
       tbody.appendChild(tr);
     });
     document.getElementById('table-note').textContent =
