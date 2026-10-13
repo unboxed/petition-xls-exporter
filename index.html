@@ -442,7 +442,7 @@
     const wb = new ExcelJS.Workbook();
     const ws1 = addSheet(wb, sheet1Name, sheet1Data, [25, 35], { horizontal: 'left', vertical: 'top', wrapText: true });
     styleAsLabels(ws1.getColumn(1));
-    const ws2 = addSheet(wb, sheet2Name, sheet2Data, [30, 30, 14], { horizontal: 'center' });
+    const ws2 = addSheet(wb, sheet2Name, sheet2Data, [50, 50, 25], { horizontal: 'center' });
     styleAsLabels(ws2.getRow(1));
     // Filter/sort dropdowns on the header row, covering every constituency row
     ws2.autoFilter = { from: 'A1', to: { row: ws2.rowCount, column: 3 } };
