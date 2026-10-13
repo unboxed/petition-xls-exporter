@@ -33,14 +33,14 @@ A table with one row per constituency, built from the `signatures_by_constituenc
 
 ## How it's built
 
-- A single self-contained `petition-xls-exporter.html` file — no build step, no server, no installation.
+- A single self-contained `index.html` file — no build step, no server, no installation.
 - Petition data is fetched client-side, directly from the Parliament petitions API.
 - The `.xls` file is generated in the browser using [SheetJS](https://sheetjs.com/) (`xlsx` library), loaded from a CDN, writing in the `biff8` format to produce a genuine legacy `.xls` binary rather than a renamed `.xlsx`.
 - Styling is plain CSS with no framework dependency.
 
 ## Usage
 
-1. Open `petition-xls-exporter.html` in any modern web browser (double-click it, or host it anywhere).
+1. Open `index.html` in any modern web browser (double-click it, or host it anywhere).
 2. Enter a petition ID or URL and click **Fetch petition**.
 3. Review the preview, then click **Download .xls** to save the file.
 
